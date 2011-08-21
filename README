@@ -1,0 +1,26 @@
+KBSynth: Turn your computer into a musical instrument
+======================================================
+
+KBSynth turns your computer keyboard into a synthesizer keyboard. 
+
+The mapping of keys to notes are
+
+A - C
+W - C#
+S - D
+E - D#
+D - E
+F - F
+T - F#
+G - G
+Y - G#
+H - A
+U - A#
+J - B
+K - C
+
+Other controls:
+
+Z - move down one octave
+X - move up one octave
+Q - quit
