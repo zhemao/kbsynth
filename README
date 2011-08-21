@@ -24,3 +24,11 @@ Other controls:
 Z - move down one octave
 X - move up one octave
 Q - quit
+
+Dependencies:
+	libao
+	ncurses
+
+Installation:
+	make to compile
+	./kbsynth to run
