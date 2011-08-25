@@ -32,3 +32,7 @@ Dependencies:
 Installation:
 	make to compile
 	./kbsynth to run
+
+License:
+
+This software is distributed under the MIT License, reproduced in LICENSE.
