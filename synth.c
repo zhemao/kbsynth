@@ -103,6 +103,8 @@ int main(int argc, char *argv[]){
 				octave++;
 				synth_init(octave);
 			}
+		} else if(ch == 'c'){
+			wf = cycle_waveform();
 		} else play_note(device, wf, ch, amp, 0.25);
 	}
 	

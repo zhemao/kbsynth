@@ -2,6 +2,10 @@
 #include "waveforms.h"
 #include <stdlib.h>
 
+static waveform all_waveforms[4] = {pure_sine, second_harmonic, 
+									third_harmonic, clipped_wave};
+static curwf = 0;
+
 float pure_sine(float freq, float amp, float t){
 	float theta = 2 * M_PI * freq * t;
 	return amp * sin(theta);
@@ -38,10 +42,15 @@ float clipped_wave(float freq, float amp, float t){
 }
 
 waveform string_to_wf(char * str){
-	if(strcmp(str, "sin")==0) return pure_sine;
-	if(strcmp(str, "second")==0) return second_harmonic;
-	if(strcmp(str, "third")==0) return third_harmonic;
-	if(strcmp(str, "clip")==0) return clipped_wave;
+	if(strcmp(str, "sin")==0){ curwf = 0; return pure_sine; }
+	if(strcmp(str, "second")==0){ curwf = 1; return second_harmonic; }
+	if(strcmp(str, "third")==0){ curwf = 2; return third_harmonic; }
+	if(strcmp(str, "clip")==0){ curwf = 3; return clipped_wave; }
 	
 	return NULL;
+}
+
+waveform cycle_waveform(){
+	curwf = (curwf + 1) % 4;
+	return all_waveforms[curwf];
 }
