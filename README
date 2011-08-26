@@ -3,6 +3,14 @@ KBSynth: Turn your computer into a musical instrument
 
 KBSynth turns your computer keyboard into a synthesizer keyboard. 
 
+Usage: ./kbsynth [-w waveform]
+
+Supported waveforms
+	sin - pure sine wave
+	second - sine wave w/ second harmonic
+	third - sine wave w/ second and third harmonics
+	clip - clipped sine wave
+
 The mapping of keys to notes are
 
 A - C
@@ -23,6 +31,7 @@ Other controls:
 
 Z - move down one octave
 X - move up one octave
+C - cycle through waveforms
 Q - quit
 
 Dependencies:

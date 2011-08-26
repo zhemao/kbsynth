@@ -40,10 +40,10 @@ void play_note(ao_device * dev, waveform wf,
 void print_usage(FILE * f, char * name){
 	fprintf(f, "Usage: %s [-w waveform]\n\n", name);
 	fprintf(f, "Supported waveforms\n");
-	fprintf(f, "sin - pure sine wave\n");
-	fprintf(f, "second - sine wave w/ second harmonic\n");
-	fprintf(f, "third - sine wave w/ second and third harmonics\n");
-	fprintf(f, "clip - clipped sine wave\n");
+	fprintf(f, "  sin - pure sine wave\n");
+	fprintf(f, "  second - sine wave w/ second harmonic\n");
+	fprintf(f, "  third - sine wave w/ second and third harmonics\n");
+	fprintf(f, "  clip - clipped sine wave\n");
 	exit(EXIT_FAILURE);
 }
 
