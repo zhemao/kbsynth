@@ -14,7 +14,8 @@ void synth_init(int octave){
 	}
 }
 
-void play_note(ao_device * dev, int note, float amp, float duration){
+void play_note(ao_device * dev, waveform wf, 
+		int note, float amp, float duration){
 	float freq = char_to_notes[note-97];
 	int buf_size;
 	short * buffer;
@@ -26,8 +27,7 @@ void play_note(ao_device * dev, int note, float amp, float duration){
 	
 	for (i = 0; i < buf_size / CHANNELS; i++){
 		float t = (float)i/SAMP_RATE;
-		float theta = 2 * M_PI * freq * t;
-		float samp = (amp * sin(theta));
+		float samp = wf(freq, amp, t);
 		for(j=0; j<CHANNELS; j++){
 			buffer[CHANNELS*i+j] = (short)samp;
 		}
@@ -37,7 +37,17 @@ void play_note(ao_device * dev, int note, float amp, float duration){
 	free(buffer);
 }
 
-int main(void){
+void print_usage(FILE * f, char * name){
+	fprintf(f, "Usage: %s [-w waveform]\n\n", name);
+	fprintf(f, "Supported waveforms\n");
+	fprintf(f, "sin - pure sine wave\n");
+	fprintf(f, "second - sine wave w/ second harmonic\n");
+	fprintf(f, "third - sine wave w/ second and third harmonics\n");
+	fprintf(f, "clip - clipped sine wave\n");
+	exit(EXIT_FAILURE);
+}
+
+int main(int argc, char *argv[]){
 	ao_device *device;
 	ao_sample_format format;
 	int default_driver;
@@ -45,6 +55,17 @@ int main(void){
 	float duration = 0.5;
 	float amp = 20000;
 	int octave = 1;
+	waveform wf = pure_sine;
+
+	while((ch = getopt(argc, argv, "w:h")) != -1){
+		if(ch == 'w'){
+			if(optarg == NULL) print_usage(stderr, argv[0]);
+			wf = string_to_wf(optarg);
+			if(!wf) print_usage(stderr, argv[0]);
+		} else if(ch == 'h'){
+			print_usage(stdout, argv[0]);
+		} else print_usage(stderr, argv[0]);
+	}
 
 	synth_init(octave);
 	ao_initialize();
@@ -82,7 +103,7 @@ int main(void){
 				octave++;
 				synth_init(octave);
 			}
-		} else play_note(device, ch, amp, 0.25);
+		} else play_note(device, wf, ch, amp, 0.25);
 	}
 	
 	endwin();

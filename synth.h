@@ -2,6 +2,7 @@
 #define __SYNTH_H__
 
 #include <ao/ao.h>
+#include "waveforms.h"
 
 #define SAMP_RATE 44100
 #define CHANNELS 2
@@ -26,7 +27,9 @@ float char_to_notes[26];
 
 /* map notes to characters */
 void synth_init(int octave);
-void play_note(ao_device * dev, int note, float amp, float duration);
+void play_note(ao_device * dev, waveform wf, 
+		int note, float amp, float duration);
+
 
 #endif /* __SYNTH_H__ */
 
