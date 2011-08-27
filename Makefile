@@ -11,4 +11,4 @@ play_tone: play_tone.c
 	gcc $(OPTS) play_tone.c -o play_tone $(LDFLAGS)
 	
 clean:
-	rm -f play_tone *.o
+	rm -f kbsynth play_tone *.o
