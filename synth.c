@@ -1,5 +1,5 @@
 #include "synth.h"
-#include <ncurses.h>
+#include <curses.h>
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
