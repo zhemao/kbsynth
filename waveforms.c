@@ -27,9 +27,9 @@ float third_harmonic(float freq, float amp, float t){
 	theta[1] = 2 * theta[0];
 	theta[2] = 2 * theta[1];
 
-	for(i=0; i<3; i++){
-		res += (amp/3) * sin(theta[i]);
-	}
+	res = (amp/2) * sin(theta[0]);
+	res += (amp/4) * sin(theta[1]);
+	res += (amp/4) * sin(theta[2]);
 
 	return res;
 }
