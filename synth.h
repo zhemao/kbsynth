@@ -6,6 +6,7 @@
 
 #define SAMP_RATE 44100
 #define CHANNELS 2
+#define INPUT_GAP 0.25
 
 /* 
  * the frequencies of notes starting from middle C and going up by half notes 
@@ -28,7 +29,7 @@ float char_to_notes[26];
 /* map notes to characters */
 void synth_init(int octave);
 void play_note(ao_device * dev, waveform wf, 
-		int note, float amp, float duration);
+		int note, float amp, float duration, float offset);
 
 
 #endif /* __SYNTH_H__ */

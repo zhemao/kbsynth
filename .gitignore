@@ -1,3 +1,4 @@
 *.o
 kbsynth
 play_tone
+*.swp

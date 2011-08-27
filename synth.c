@@ -15,7 +15,7 @@ void synth_init(int octave){
 }
 
 void play_note(ao_device * dev, waveform wf, 
-		int note, float amp, float duration){
+		int note, float amp, float duration, float offset){
 	float freq = char_to_notes[note-97];
 	int buf_size;
 	short * buffer;
@@ -26,7 +26,7 @@ void play_note(ao_device * dev, waveform wf,
 	buffer = (short*)calloc(sizeof(short), buf_size);
 	
 	for (i = 0; i < buf_size / CHANNELS; i++){
-		float t = (float)i/SAMP_RATE;
+		float t = (float)i/SAMP_RATE + offset;
 		float samp = wf(freq, amp, t);
 		for(j=0; j<CHANNELS; j++){
 			buffer[CHANNELS*i+j] = (short)samp;
@@ -55,6 +55,7 @@ int main(int argc, char *argv[]){
 	float duration = 0.5;
 	float amp = 20000;
 	int octave = 1;
+	float offset = 0;
 	waveform wf = pure_sine;
 
 	while((ch = getopt(argc, argv, "w:h")) != -1){
@@ -105,7 +106,12 @@ int main(int argc, char *argv[]){
 			}
 		} else if(ch == 'c'){
 			wf = cycle_waveform();
-		} else play_note(device, wf, ch, amp, 0.25);
+		} else{
+			if(lastch == ch) offset += INPUT_GAP;
+			else offset = 0;
+			play_note(device, wf, ch, amp, INPUT_GAP, offset);
+		}
+		lastch = ch;
 	}
 	
 	endwin();
