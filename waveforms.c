@@ -37,8 +37,8 @@ float third_harmonic(float freq, float amp, float t){
 float clipped_wave(float freq, float amp, float t){
 	float theta = 2 * M_PI * freq * t;
 	float res = amp * sin(theta);
-	if(res < 0.1) return 0;
-	return res - 0.1;
+	if(res < 1) return 0;
+	return res - 1;
 }
 
 waveform string_to_wf(char * str){
