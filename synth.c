@@ -6,6 +6,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
+#include <limits.h>
 
 void synth_init(int octave){
 	int i;
@@ -52,8 +53,7 @@ int main(int argc, char *argv[]){
 	ao_sample_format format;
 	int default_driver;
 	int ch, lastch;
-	float duration = 0.5;
-	float amp = 20000;
+	float amp = SHRT_MAX;
 	int octave = 1;
 	float offset = 0;
 	waveform wf = pure_sine;
