@@ -7,11 +7,13 @@
 #include <ctype.h>
 #include <unistd.h>
 #include <limits.h>
+#include <math.h>
 
 void synth_init(int octave){
 	int i;
+	double mult = pow(2, octave);
 	for(i=0;i<13;i++){
-		char_to_notes[characters[i]-97] = frequencies[octave][i];
+		char_to_notes[characters[i]-97] = mult * frequencies[i];
 	}
 }
 
@@ -54,7 +56,7 @@ int main(int argc, char *argv[]){
 	int default_driver;
 	int ch, lastch;
 	float amp = SHRT_MAX;
-	int octave = 1;
+	int octave = 0;
 	float offset = 0;
 	waveform wf = pure_sine;
 
@@ -95,15 +97,11 @@ int main(int argc, char *argv[]){
 
 	while( (ch=getchar()) != 'q'){
 		if(ch == 'z'){
-			if(octave > 0){
-				octave--;
-				synth_init(octave);
-			}
+			octave--;
+			synth_init(octave);
 		} else if(ch == 'x'){
-			if(octave < 2){
-				octave++;
-				synth_init(octave);
-			}
+			octave++;
+			synth_init(octave);
 		} else if(ch == 'c'){
 			wf = cycle_waveform();
 		} else{
