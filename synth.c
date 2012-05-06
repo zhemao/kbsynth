@@ -1,4 +1,5 @@
 #include "synth.h"
+#include "recorder.h"
 #include <curses.h>
 #include <math.h>
 #include <stdlib.h>
@@ -41,11 +42,11 @@ void play_note(ao_device * dev, waveform wf,
 }
 
 void print_usage(FILE * f, char * name){
-	fprintf(f, "Usage: %s [-w waveform]\n\n", name);
+	fprintf(f, "Usage: %s [-w waveform] [-r recordfile]\n\n", name);
 	fprintf(f, "Supported waveforms\n");
 	fprintf(f, "  sin - pure sine wave\n");
-	fprintf(f, "  second - sine wave w/ second harmonic\n");
-	fprintf(f, "  third - sine wave w/ second and third harmonics\n");
+	fprintf(f, "  clarinet - clarinet voice\n");
+	fprintf(f, "  piano - piano voice \n");
 	fprintf(f, "  clip - clipped sine wave\n");
 	exit(EXIT_FAILURE);
 }
@@ -55,19 +56,25 @@ int main(int argc, char *argv[]){
 	ao_sample_format format;
 	int default_driver;
 	int ch, lastch;
+	int rec = 0;
 	float amp = SHRT_MAX;
 	int octave = 0;
 	float offset = 0;
+	char rec_filename[256];
 	waveform wf = pure_sine;
 
-	while((ch = getopt(argc, argv, "w:h")) != -1){
+	while((ch = getopt(argc, argv, "w:r:h")) != -1){
 		if(ch == 'w'){
 			if(optarg == NULL) print_usage(stderr, argv[0]);
 			wf = string_to_wf(optarg);
 			if(!wf) print_usage(stderr, argv[0]);
 		} else if(ch == 'h'){
 			print_usage(stdout, argv[0]);
-		} else print_usage(stderr, argv[0]);
+		} else if(ch == 'r'){
+			if(optarg == NULL) print_usage(stderr, argv[0]);
+			rec = 1;
+			strncpy(rec_filename, optarg, 256);
+		}else print_usage(stderr, argv[0]);
 	}
 
 	synth_init(octave);
@@ -95,6 +102,8 @@ int main(int argc, char *argv[]){
 	noecho();
 	raw();
 
+	if(rec) start_recording(rec_filename);
+	
 	while( (ch=getchar()) != 'q'){
 		if(ch == 'z'){
 			octave--;
@@ -106,13 +115,18 @@ int main(int argc, char *argv[]){
 			wf = cycle_waveform();
 		} else{
 			if(lastch == ch) offset += INPUT_GAP;
-			else offset = 0;
+			else {
+				offset = 0;
+				if(rec) record_note(ch, octave);
+			}
 			play_note(device, wf, ch, amp, INPUT_GAP, offset);
 		}
 		lastch = ch;
 	}
 	
 	endwin();
+	
+	if(rec) stop_recording();
 
 	ao_close(device);
 	ao_shutdown();
