@@ -52,7 +52,10 @@ void print_usage(FILE * f, char * name){
 }
 
 void play_recording(ao_device * device, waveform wf, char * rec_filename){
-	FILE * rec_file = fopen(rec_filename, "r");
+	FILE * rec_file;
+	if(strcmp(rec_filename, "-") == 0)
+		rec_file = stdin;
+	else rec_file = fopen(rec_filename, "r");
 	struct timezone tz;
 	struct timeval start;
 	struct timeval now;
@@ -75,6 +78,8 @@ void play_recording(ao_device * device, waveform wf, char * rec_filename){
 			usleep(1000);
 		}
 	}
+
+	fclose(rec_file);
 }
 
 void play_keyboard(ao_device * device, waveform wf, 
