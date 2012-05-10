@@ -3,7 +3,13 @@ KBSynth: Turn your computer into a musical instrument
 
 KBSynth turns your computer keyboard into a synthesizer keyboard. 
 
-Usage: ./kbsynth [-w waveform]
+Usage: ./kbsynth [-w waveform] [(-r|-p) recordfile]
+
+The options are
+
+	-w Use the specified waveform
+	-r Record the performance to recordfile
+	-p Play back the performance saved in recordfile
 
 Supported waveforms
 	sin - pure sine wave

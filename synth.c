@@ -42,7 +42,7 @@ void play_note(ao_device * dev, waveform wf,
 }
 
 void print_usage(FILE * f, char * name){
-	fprintf(f, "Usage: %s [-w waveform] [-r recordfile]\n\n", name);
+	fprintf(f, "Usage: %s [-w waveform] [(-r|-p) recordfile]\n\n", name);
 	fprintf(f, "Supported waveforms\n");
 	fprintf(f, "  sin - pure sine wave\n");
 	fprintf(f, "  second - second harmonic\n");
