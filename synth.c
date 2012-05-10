@@ -10,17 +10,17 @@
 #include <limits.h>
 #include <math.h>
 
-void synth_init(int octave){
+void synth_init(){
 	int i;
-	double mult = pow(2, octave);
+	mult = 1.0;
 	for(i=0;i<13;i++){
-		char_to_notes[characters[i]-97] = mult * frequencies[i];
+		key_to_note[keys[i]-97] = i;
 	}
 }
 
 void play_note(ao_device * dev, waveform wf, 
 		int note, float amp, float duration, float offset){
-	float freq = char_to_notes[note-97];
+	float freq = frequencies[note] * mult;
 	int buf_size;
 	short * buffer;
 	int i,j;
@@ -45,39 +45,73 @@ void print_usage(FILE * f, char * name){
 	fprintf(f, "Usage: %s [-w waveform] [-r recordfile]\n\n", name);
 	fprintf(f, "Supported waveforms\n");
 	fprintf(f, "  sin - pure sine wave\n");
-	fprintf(f, "  clarinet - clarinet voice\n");
-	fprintf(f, "  piano - piano voice \n");
+	fprintf(f, "  second - second harmonic\n");
+	fprintf(f, "  8bit - eight bit sound\n");
 	fprintf(f, "  clip - clipped sine wave\n");
 	exit(EXIT_FAILURE);
 }
 
+void play_keyboard(ao_device * device, waveform wf, 
+					int rec, char * rec_filename){
+	int ch, lastch;
+	float amp = SHRT_MAX;
+	float offset = 0;
+	int octave = 0, note = 0;
+
+	initscr();
+	noecho();
+	raw();
+
+	if(rec) start_recording(rec_filename);
+	
+	while( (ch=getchar()) != 'q'){
+		if(ch == 'z'){
+			octave--;
+			mult /= 2;
+		} else if(ch == 'x'){
+			octave++;
+			mult *= 2;
+		} else if(ch == 'c'){
+			wf = cycle_waveform();
+		} else{
+			note = key_to_note[ch-97];
+			if(lastch == ch) offset += INPUT_GAP;
+			else {
+				offset = 0;
+				if(rec) record_note(note, octave);
+			}
+			play_note(device, wf, note, amp, INPUT_GAP, offset);
+		}
+		lastch = ch;
+	}
+	
+	endwin();
+	
+	if(rec) stop_recording();
+}
+
 int main(int argc, char *argv[]){
+	char ch;
 	ao_device *device;
 	ao_sample_format format;
 	int default_driver;
-	int ch, lastch;
-	int rec = 0;
-	float amp = SHRT_MAX;
-	int octave = 0;
-	float offset = 0;
 	char rec_filename[256];
+	int rec = 0;
 	waveform wf = pure_sine;
 
 	while((ch = getopt(argc, argv, "w:r:h")) != -1){
 		if(ch == 'w'){
-			if(optarg == NULL) print_usage(stderr, argv[0]);
 			wf = string_to_wf(optarg);
 			if(!wf) print_usage(stderr, argv[0]);
 		} else if(ch == 'h'){
 			print_usage(stdout, argv[0]);
 		} else if(ch == 'r'){
-			if(optarg == NULL) print_usage(stderr, argv[0]);
 			rec = 1;
 			strncpy(rec_filename, optarg, 256);
 		}else print_usage(stderr, argv[0]);
 	}
 
-	synth_init(octave);
+	synth_init();
 	ao_initialize();
 
 	default_driver = ao_default_driver_id();
@@ -98,35 +132,7 @@ int main(int argc, char *argv[]){
 		return 1;
 	}
 	
-	initscr();
-	noecho();
-	raw();
-
-	if(rec) start_recording(rec_filename);
-	
-	while( (ch=getchar()) != 'q'){
-		if(ch == 'z'){
-			octave--;
-			synth_init(octave);
-		} else if(ch == 'x'){
-			octave++;
-			synth_init(octave);
-		} else if(ch == 'c'){
-			wf = cycle_waveform();
-		} else{
-			if(lastch == ch) offset += INPUT_GAP;
-			else {
-				offset = 0;
-				if(rec) record_note(ch, octave);
-			}
-			play_note(device, wf, ch, amp, INPUT_GAP, offset);
-		}
-		lastch = ch;
-	}
-	
-	endwin();
-	
-	if(rec) stop_recording();
+	play_keyboard(device, wf, rec, rec_filename);
 
 	ao_close(device);
 	ao_shutdown();

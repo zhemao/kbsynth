@@ -23,14 +23,14 @@ static double timeval_diff(struct timeval * then, struct timeval * now){
 	return secs + (double) usecs / 1000000.0;
 }
 
-void record_note(char note, int octave){
+void record_note(int note, int octave){
 	struct timeval now;
 	double diff;
 	
 	gettimeofday(&now, &tz);
 	diff = timeval_diff(&rec_start, &now);
 	
-	fprintf(rec_file, "%c\t%d\t%f\n", note, octave, diff);
+	fprintf(rec_file, "%d\t%d\t%f\n", note, octave, diff);
 }
 
 void stop_recording(){
