@@ -19,7 +19,7 @@ void synth_init(){
 }
 
 void play_note(ao_device * dev, waveform wf, 
-		int note, float amp, float duration, float offset){
+		int note, float amp, float duration){
 	float freq = frequencies[note] * mult;
 	int buf_size;
 	short * buffer;
@@ -30,7 +30,7 @@ void play_note(ao_device * dev, waveform wf,
 	buffer = (short*)calloc(sizeof(short), buf_size);
 	
 	for (i = 0; i < buf_size / CHANNELS; i++){
-		float t = (float)i/SAMP_RATE + offset;
+		float t = (float)i/SAMP_RATE;
 		float samp = wf(freq, amp, t);
 		for(j=0; j<CHANNELS; j++){
 			buffer[CHANNELS*i+j] = (short)samp;
@@ -51,11 +51,36 @@ void print_usage(FILE * f, char * name){
 	exit(EXIT_FAILURE);
 }
 
+void play_recording(ao_device * device, waveform wf, char * rec_filename){
+	FILE * rec_file = fopen(rec_filename, "r");
+	struct timezone tz;
+	struct timeval start;
+	struct timeval now;
+	double diff;
+	float amp = SHRT_MAX;
+	note_t note;
+
+	gettimeofday(&start, &tz);
+	
+	int ret = scan_note(rec_file, &note);
+	while(ret != 0 && ret != EOF){
+		gettimeofday(&now, &tz);
+		diff = timeval_diff(&start, &now);
+
+		if(diff >= note.time){
+			mult = pow(2, note.octave);
+			play_note(device, wf, note.note, amp, INPUT_GAP);
+			ret = scan_note(rec_file, &note);
+		} else {
+			usleep(1000);
+		}
+	}
+}
+
 void play_keyboard(ao_device * device, waveform wf, 
 					int rec, char * rec_filename){
-	int ch, lastch;
+	int ch;
 	float amp = SHRT_MAX;
-	float offset = 0;
 	int octave = 0, note = 0;
 
 	initscr();
@@ -75,14 +100,10 @@ void play_keyboard(ao_device * device, waveform wf,
 			wf = cycle_waveform();
 		} else{
 			note = key_to_note[ch-97];
-			if(lastch == ch) offset += INPUT_GAP;
-			else {
-				offset = 0;
-				if(rec) record_note(note, octave);
-			}
-			play_note(device, wf, note, amp, INPUT_GAP, offset);
+			
+			if(rec) record_note(note, octave);
+			play_note(device, wf, note, amp, INPUT_GAP);
 		}
-		lastch = ch;
 	}
 	
 	endwin();
@@ -96,10 +117,10 @@ int main(int argc, char *argv[]){
 	ao_sample_format format;
 	int default_driver;
 	char rec_filename[256];
-	int rec = 0;
+	int rec = 0, pb = 0;
 	waveform wf = pure_sine;
 
-	while((ch = getopt(argc, argv, "w:r:h")) != -1){
+	while((ch = getopt(argc, argv, "w:r:p:h")) != -1){
 		if(ch == 'w'){
 			wf = string_to_wf(optarg);
 			if(!wf) print_usage(stderr, argv[0]);
@@ -108,7 +129,10 @@ int main(int argc, char *argv[]){
 		} else if(ch == 'r'){
 			rec = 1;
 			strncpy(rec_filename, optarg, 256);
-		}else print_usage(stderr, argv[0]);
+		} else if (ch == 'p'){
+			pb = 1;
+			strncpy(rec_filename, optarg, 256);
+		} else print_usage(stderr, argv[0]);
 	}
 
 	synth_init();
@@ -132,7 +156,10 @@ int main(int argc, char *argv[]){
 		return 1;
 	}
 	
-	play_keyboard(device, wf, rec, rec_filename);
+	if(pb)
+		play_recording(device, wf, rec_filename);
+	else
+		play_keyboard(device, wf, rec, rec_filename);
 
 	ao_close(device);
 	ao_shutdown();

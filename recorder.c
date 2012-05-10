@@ -1,6 +1,4 @@
 #include "recorder.h"
-#include <stdio.h>
-#include <sys/time.h>
 
 static struct timeval rec_start;
 static struct timezone tz;
@@ -11,7 +9,7 @@ void start_recording(char * filename){
 	gettimeofday(&rec_start, &tz);
 }
 
-static double timeval_diff(struct timeval * then, struct timeval * now){
+double timeval_diff(struct timeval * then, struct timeval * now){
 	int secs = now->tv_sec - then->tv_sec;
 	int usecs = now->tv_usec - then->tv_usec;
 
@@ -39,4 +37,6 @@ void stop_recording(){
 	rec_start.tv_usec = 0;
 }
 
-
+int scan_note(FILE * f, note_t * note){
+	return fscanf(f, "%d\t%d\t%f\n", &note->note, &note->octave, &note->time);
+}
