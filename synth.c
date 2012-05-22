@@ -77,7 +77,7 @@ void play_recording(ao_device * device, waveform wf, char * rec_filename){
 
 		if(diff >= note.time){
 			mult = pow(2, note.octave);
-			play_note(device, wf, note.note, amp, INPUT_GAP, 0);
+			play_note(device, wf, note.note, amp, note.duration, 0);
 			ret = scan_note(rec_file, &note);
 		} else {
 			usleep(1000);
@@ -124,6 +124,8 @@ void play_keyboard(ao_device * device, waveform wf,
 				key = event.xkey.keycode;
 				if(key > 24 && key < 46){
 					note = key_to_note[key];
+					if(note >= 0 && rec) 
+						record_note_start(note, octave);
 				}
 			}
 			else if(event.type == KeyRelease){
@@ -141,7 +143,10 @@ void play_keyboard(ao_device * device, waveform wf,
 				} 
 				else if(key == 54){
 					wf = cycle_waveform();
-				} 
+				} else if(key > 24 && key < 46){
+					if(note >= 0 && rec)
+						record_note_stop();
+				}
 				
 				offset = 0;
 				key = 0;
@@ -150,7 +155,6 @@ void play_keyboard(ao_device * device, waveform wf,
 		}
 
 		if(note >= 0){
-			if(rec) record_note(note, octave);
 			play_note(device, wf, note, amp, INPUT_GAP, offset);
 			offset += INPUT_GAP;
 		}

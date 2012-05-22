@@ -3,6 +3,7 @@
 static struct timeval rec_start;
 static struct timezone tz;
 static FILE * rec_file;
+static note_t cur_note;
 
 void start_recording(char * filename){
 	rec_file = fopen(filename, "w");
@@ -21,14 +22,28 @@ double timeval_diff(struct timeval * then, struct timeval * now){
 	return secs + (double) usecs / 1000000.0;
 }
 
-void record_note(int note, int octave){
+void record_note_start(int note, int octave){
 	struct timeval now;
 	double diff;
 	
 	gettimeofday(&now, &tz);
 	diff = timeval_diff(&rec_start, &now);
-	
-	fprintf(rec_file, "%d\t%d\t%f\n", note, octave, diff);
+
+	cur_note.note = note;
+	cur_note.octave = octave;
+	cur_note.time = diff;
+}
+
+void record_note_stop(){
+	struct timeval now;
+	double diff;
+
+	gettimeofday(&now, &tz);
+	diff = timeval_diff(&rec_start, &now);
+
+	fprintf(rec_file, "%d\t%d\t%f\t%f\n", 
+			cur_note.note, cur_note.octave, 
+			cur_note.time, diff - cur_note.time);
 }
 
 void stop_recording(){
@@ -38,5 +53,7 @@ void stop_recording(){
 }
 
 int scan_note(FILE * f, note_t * note){
-	return fscanf(f, "%d\t%d\t%f\n", &note->note, &note->octave, &note->time);
+	return fscanf(f, "%d\t%d\t%f\t%f\n", 
+			&note->note, &note->octave, 
+			&note->time, &note->duration);
 }
