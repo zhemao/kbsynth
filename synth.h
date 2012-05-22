@@ -6,7 +6,7 @@
 
 #define SAMP_RATE 44100
 #define CHANNELS 2
-#define INPUT_GAP 0.1
+#define INPUT_GAP 0.001
 
 /* 
  * the frequencies of notes starting from middle C and going up by half notes 

@@ -1,5 +1,5 @@
-#ifndef __WAVEFORM_H__
-#define __WAVEFORM_H__
+#ifndef __KBSYNTH_WAVEFORM_H__
+#define __KBSYNTH_WAVEFORM_H__
 
 typedef float (*waveform)(float, float, float);
 

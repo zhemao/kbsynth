@@ -1,5 +1,6 @@
 #include "synth.h"
 #include "recorder.h"
+#include "drawing.h"
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -92,28 +93,36 @@ void play_keyboard(ao_device * device, waveform wf,
 	float amp = SHRT_MAX;
 	int octave = 0, note = 0;
 	float offset = 0;
+	int width = 500, height = 200;
 
 	if(rec) start_recording(rec_filename);
 
 	Display *display = XOpenDisplay(NULL);
 	Window window;
 	XEvent event;
+	GC gc;
+
 	window = XCreateSimpleWindow(display, DefaultRootWindow(display), 
-									0, 0, 100, 100, 10, 0, 0);
+									0, 0, width, height, 10, 0, 0);
+
+	XSelectInput(display, window, KeyPressMask | KeyReleaseMask | StructureNotifyMask);
+
 	XMapWindow(display, window);
 
-	XSelectInput(display, window, KeyPressMask | KeyReleaseMask);
+	gc = XCreateGC(display, window, 0, NULL);
 	
 	while( 1 ){
 
 		if(XPending(display)){
 			XNextEvent(display, &event);
-			XFlush(display);
-			if(event.xkey.type == KeyPress){
-				key = event.xkey.keycode;
-				printf("Pressed key: %d\n", key);
+
+			if(event.type == MapNotify){
+				draw_piano(display, window, gc, width, height);
 			}
-			else if(event.xkey.type == KeyRelease){
+			if(event.type == KeyPress){
+				key = event.xkey.keycode;
+			}
+			else if(event.type == KeyRelease){
 				key = event.xkey.keycode;
 				
 				if(key == 24)
@@ -148,6 +157,7 @@ void play_keyboard(ao_device * device, waveform wf,
 	
 	if(rec) stop_recording();
 
+	XFreeGC(display, gc);
 	XUnmapWindow(display, window);
 	XDestroyWindow(display, window);
 	XCloseDisplay(display);
