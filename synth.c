@@ -13,8 +13,13 @@
 void synth_init(){
 	int i;
 	mult = 1.0;
+
+	for(i=0; i<46; i++){
+		key_to_note[i] = -1;
+	}
+
 	for(i=0;i<13;i++){
-		key_to_note[keys[i]-97] = i;
+		key_to_note[keys[i]] = i;
 	}
 }
 
@@ -24,7 +29,7 @@ void play_note(ao_device * dev, waveform wf,
 	int buf_size;
 	short * buffer;
 	int i,j;
-	
+
 	buf_size = duration * (CHANNELS * SAMP_RATE);
 	buffer = (short*)calloc(sizeof(short), buf_size);
 	
@@ -83,7 +88,7 @@ void play_recording(ao_device * device, waveform wf, char * rec_filename){
 
 void play_keyboard(ao_device * device, waveform wf, 
 					int rec, char * rec_filename){
-	int ch = 0;
+	int key = 0;
 	float amp = SHRT_MAX;
 	int octave = 0, note = 0;
 	float offset = 0;
@@ -91,8 +96,11 @@ void play_keyboard(ao_device * device, waveform wf,
 	if(rec) start_recording(rec_filename);
 
 	Display *display = XOpenDisplay(NULL);
-	Window window = DefaultRootWindow(display);
+	Window window;
 	XEvent event;
+	window = XCreateSimpleWindow(display, DefaultRootWindow(display), 
+									0, 0, 100, 100, 10, 0, 0);
+	XMapWindow(display, window);
 
 	XSelectInput(display, window, KeyPressMask | KeyReleaseMask);
 	
@@ -100,37 +108,48 @@ void play_keyboard(ao_device * device, waveform wf,
 
 		if(XPending(display)){
 			XNextEvent(display, &event);
-			switch(event.xkey.type){
-				case KeyPress:
-					printf("Key Pressed: %d\n", event.xkey.keycode);
+			XFlush(display);
+			if(event.xkey.type == KeyPress){
+				key = event.xkey.keycode;
+				printf("Pressed key: %d\n", key);
+			}
+			else if(event.xkey.type == KeyRelease){
+				key = event.xkey.keycode;
+				
+				if(key == 24)
 					break;
-				case KeyRelease:
-					offset = 0;
-					ch = 0;
-					break;
+				else if(key == 52){
+					octave--;
+					mult /= 2;
+				} 
+				else if(key == 53){
+					octave++;
+					mult *= 2;
+				} 
+				else if(key == 54){
+					wf = cycle_waveform();
+				}
+				
+				offset = 0;
+				key = 0;
 			}
 		}
 
-		if(ch == 0); // don't do anything if ch is 0
-		if(ch == 'z'){
-			octave--;
-			mult /= 2;
-		} else if(ch == 'x'){
-			octave++;
-			mult *= 2;
-		} else if(ch == 'c'){
-			wf = cycle_waveform();
-		} else {
-			note = key_to_note[ch-97];
-			if(rec) record_note(note, octave);
-			play_note(device, wf, note, amp, INPUT_GAP, offset);
-			offset += INPUT_GAP;
+		if(key > 24 && key < 46){
+			note = key_to_note[key];
+			if(note >= 0){
+				if(rec) record_note(note, octave);
+				play_note(device, wf, note, amp, INPUT_GAP, offset);
+				offset += INPUT_GAP;
+			}
 		}
 
 	}
 	
 	if(rec) stop_recording();
 
+	XUnmapWindow(display, window);
+	XDestroyWindow(display, window);
 	XCloseDisplay(display);
 }
 
