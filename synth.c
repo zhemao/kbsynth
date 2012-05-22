@@ -105,7 +105,8 @@ void play_keyboard(ao_device * device, waveform wf,
 	window = XCreateSimpleWindow(display, DefaultRootWindow(display), 
 									0, 0, width, height, 10, 0, 0);
 
-	XSelectInput(display, window, KeyPressMask | KeyReleaseMask | StructureNotifyMask);
+	XSelectInput(display, window, KeyPressMask | KeyReleaseMask | 
+								  StructureNotifyMask | ExposureMask);
 
 	XMapWindow(display, window);
 
@@ -116,7 +117,7 @@ void play_keyboard(ao_device * device, waveform wf,
 		if(XPending(display)){
 			XNextEvent(display, &event);
 
-			if(event.type == MapNotify){
+			if(event.type == MapNotify || event.type == Expose){
 				draw_piano(display, window, gc, width, height);
 			}
 			if(event.type == KeyPress){
