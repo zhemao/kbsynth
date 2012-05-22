@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-ggdb -Wall
-LDFLAGS=-lm -lao -lxcb
+LDFLAGS=-lm -lao -lX11
 
 kbsynth: synth.h synth.c waveforms.o recorder.o
 	$(CC) $(CFLAGS) synth.c waveforms.o recorder.o -o kbsynth $(LDFLAGS)

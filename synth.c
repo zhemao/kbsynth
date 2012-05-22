@@ -8,8 +8,7 @@
 #include <unistd.h>
 #include <limits.h>
 #include <math.h>
-#include <xcb/xcb.h>
-#include <xcb/xcb_keysyms.h>
+#include <X11/Xlib.h>
 
 void synth_init(){
 	int i;
@@ -89,55 +88,23 @@ void play_keyboard(ao_device * device, waveform wf,
 	int octave = 0, note = 0;
 	float offset = 0;
 
-	xcb_connection_t *conn;
-	xcb_screen_t *screen;
-	xcb_window_t window;
-	xcb_generic_event_t *event;
-	xcb_key_press_event_t *kp;
-	xcb_keycode_t keycodes[2] = {0, XCB_NO_SYMBOL};
-	xcb_keysym_t key;
-
-	conn = xcb_connect(NULL, NULL);
-
-	if(conn == NULL){
-		fprintf(stderr, "Could not open display.\n");
-		exit(1);
-	}
-
-	screen = xcb_setup_roots_iterator(xcb_get_setup(conn)).data;
-
-	if(screen == NULL){
-		fprintf(stderr, "Couldn't grab screen.\n");
-		exit(1);
-	}
-	
-	uint32_t mask = XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK;
-	uint32_t values[2] = {screen->white_pixel, 
-							XCB_EVENT_MASK_KEY_PRESS | 
-							XCB_EVENT_MASK_KEY_RELEASE};
-
-	window = xcb_generate_id(conn);
-	xcb_create_window(conn, 0, window, screen->root, 0, 0, 100, 100, 10,
-						XCB_WINDOW_CLASS_INPUT_OUTPUT, 
-						screen->root_visual, mask, values);
-	xcb_map_window(conn, window);
-	xcb_flush(conn);
-	
 	if(rec) start_recording(rec_filename);
+
+	Display *display = XOpenDisplay(NULL);
+	Window window = DefaultRootWindow(display);
+	XEvent event;
+
+	XSelectInput(display, window, KeyPressMask | KeyReleaseMask);
 	
 	while( 1 ){
-		event = xcb_poll_for_event(conn);
 
-		if(event != NULL){
-			switch(event->response_type & ~0x80){
-				case XCB_KEY_PRESS:
-					kp = (xcb_key_press_event_t *) event;
-					keycodes[0] = kp->detail;
-					key = xcb_key_press_lookup_keysym(
-					printf("Key Pressed: %d\n", kp->detail);
+		if(XPending(display)){
+			XNextEvent(display, &event);
+			switch(event.xkey.type){
+				case KeyPress:
+					printf("Key Pressed: %d\n", event.xkey.keycode);
 					break;
-				case XCB_KEY_RELEASE:
-					kp = (xcb_key_press_event_t *) event;
+				case KeyRelease:
 					offset = 0;
 					ch = 0;
 					break;
@@ -160,12 +127,11 @@ void play_keyboard(ao_device * device, waveform wf,
 			offset += INPUT_GAP;
 		}
 
-		free(event);
 	}
 	
 	if(rec) stop_recording();
 
-	xcb_disconnect(conn);
+	XCloseDisplay(display);
 }
 
 int main(int argc, char *argv[]){
