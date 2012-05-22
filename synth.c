@@ -89,7 +89,6 @@ void play_recording(ao_device * device, waveform wf, char * rec_filename){
 
 void play_keyboard(ao_device * device, waveform wf, 
 					int rec, char * rec_filename){
-	int key = 0;
 	float amp = SHRT_MAX;
 	int octave = 0, note = -1;
 	float offset = 0;
@@ -105,8 +104,10 @@ void play_keyboard(ao_device * device, waveform wf,
 	window = XCreateSimpleWindow(display, DefaultRootWindow(display), 
 									0, 0, width, height, 10, 0, 0);
 
-	XSelectInput(display, window, KeyPressMask | KeyReleaseMask | 
-								  StructureNotifyMask | ExposureMask);
+	XSelectInput(display, window, 
+			KeyPressMask | KeyReleaseMask | 
+			ButtonPressMask | ButtonReleaseMask |
+			StructureNotifyMask | ExposureMask);
 
 	XMapWindow(display, window);
 
@@ -120,8 +121,21 @@ void play_keyboard(ao_device * device, waveform wf,
 			if(event.type == MapNotify || event.type == Expose){
 				draw_piano(display, window, gc, width, height);
 			}
+			if(event.type == ButtonPress){
+				note = press_key(event.xbutton.x, event.xbutton.y, 
+									width, height);
+				if(note >= 0 && rec) 
+					record_note_start(note, octave);
+			}
+			if(event.type == ButtonRelease){
+				if(note >= 0 && rec)
+					record_note_stop();
+			
+				offset = 0;
+				note = -1;
+			}
 			if(event.type == KeyPress){
-				key = event.xkey.keycode;
+				int key = event.xkey.keycode;
 				if(key > 24 && key < 46){
 					note = key_to_note[key];
 					if(note >= 0 && rec) 
@@ -129,7 +143,7 @@ void play_keyboard(ao_device * device, waveform wf,
 				}
 			}
 			else if(event.type == KeyRelease){
-				key = event.xkey.keycode;
+				int key = event.xkey.keycode;
 				
 				if(key == 24)
 					break;
@@ -149,7 +163,6 @@ void play_keyboard(ao_device * device, waveform wf,
 				}
 				
 				offset = 0;
-				key = 0;
 				note = -1;
 			}
 		}
