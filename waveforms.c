@@ -2,10 +2,11 @@
 #include "waveforms.h"
 #include <stdlib.h>
 #include <limits.h>
+#include <string.h>
 
 static waveform all_waveforms[4] = {pure_sine, second_harmonic, 
 									eight_bit, clipped_wave};
-static curwf = 0;
+static int curwf = 0;
 
 float pure_sine(float freq, float amp, float t){
 	float theta = 2 * M_PI * freq * t;

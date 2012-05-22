@@ -24,7 +24,7 @@ double mult;
 /* map notes to characters */
 void synth_init();
 void play_note(ao_device * dev, waveform wf, 
-		int note, float amp, float duration);
+		int note, float amp, float duration, float offset);
 
 #endif /* __SYNTH_H__ */
 

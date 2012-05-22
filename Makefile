@@ -1,17 +1,13 @@
-OPTS=-ggdb
-LDFLAGS=-lm -lao -lncurses
+CC=gcc
+CFLAGS=-ggdb -Wall
+LDFLAGS=-lm -lao -lxcb
 
 kbsynth: synth.h synth.c waveforms.o recorder.o
-	gcc $(OPTS) synth.c waveforms.o recorder.o -o kbsynth $(LDFLAGS)
+	$(CC) $(CFLAGS) synth.c waveforms.o recorder.o -o kbsynth $(LDFLAGS)
 	
-waveforms.o: waveforms.h waveforms.c
-	gcc -c waveforms.c
+waveforms.o: waveforms.c waveforms.h
 
-recorder.o: recorder.h recorder.c
-	gcc -c recorder.c
+recorder.o: recorder.c recorder.h
 
-play_tone: play_tone.c
-	gcc $(OPTS) play_tone.c -o play_tone $(LDFLAGS)
-	
 clean:
 	rm -f kbsynth play_tone *.o
