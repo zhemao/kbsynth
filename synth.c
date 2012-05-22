@@ -91,7 +91,7 @@ void play_keyboard(ao_device * device, waveform wf,
 					int rec, char * rec_filename){
 	int key = 0;
 	float amp = SHRT_MAX;
-	int octave = 0, note = 0;
+	int octave = 0, note = -1;
 	float offset = 0;
 	int width = 500, height = 200;
 
@@ -121,6 +121,9 @@ void play_keyboard(ao_device * device, waveform wf,
 			}
 			if(event.type == KeyPress){
 				key = event.xkey.keycode;
+				if(key > 24 && key < 46){
+					note = key_to_note[key];
+				}
 			}
 			else if(event.type == KeyRelease){
 				key = event.xkey.keycode;
@@ -137,20 +140,18 @@ void play_keyboard(ao_device * device, waveform wf,
 				} 
 				else if(key == 54){
 					wf = cycle_waveform();
-				}
+				} 
 				
 				offset = 0;
 				key = 0;
+				note = -1;
 			}
 		}
 
-		if(key > 24 && key < 46){
-			note = key_to_note[key];
-			if(note >= 0){
-				if(rec) record_note(note, octave);
-				play_note(device, wf, note, amp, INPUT_GAP, offset);
-				offset += INPUT_GAP;
-			}
+		if(note >= 0){
+			if(rec) record_note(note, octave);
+			play_note(device, wf, note, amp, INPUT_GAP, offset);
+			offset += INPUT_GAP;
 		}
 
 	}
