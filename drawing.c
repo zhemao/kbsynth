@@ -39,7 +39,8 @@ void draw_piano(Display *display, Window window, GC gc, int width, int height){
 	XSetForeground(display, gc, black);
 
 	for(i=0; i<8; i++){
-		XDrawRectangle(display, window, gc, i * whiteKeyWidth, 0, whiteKeyWidth, height);
+		XDrawRectangle(display, window, gc, i * whiteKeyWidth, 0, 
+											whiteKeyWidth, height);
 	}
 
 	for(i=0; i<2; i++){
