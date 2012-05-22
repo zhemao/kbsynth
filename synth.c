@@ -109,6 +109,8 @@ void play_keyboard(ao_device * device, waveform wf,
 			ButtonPressMask | ButtonReleaseMask |
 			StructureNotifyMask | ExposureMask);
 
+	XStoreName(display, window, "kbsynth");
+
 	XMapWindow(display, window);
 
 	gc = XCreateGC(display, window, 0, NULL);
