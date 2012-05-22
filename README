@@ -14,7 +14,7 @@ The options are
 Supported waveforms
 	sin - pure sine wave
 	second - sine wave w/ second harmonic
-	third - sine wave w/ second and third harmonics
+	8bit - eight-bit sound texture
 	clip - clipped sine wave
 
 The mapping of keys to notes are
