@@ -23,7 +23,7 @@ void draw_piano(Display *display, Window window, GC gc, int width, int height){
 											blackKeyWidth, blackKeyHeight);
 	}
 
-	for(i=4; i<7; i++){
+	for(i=3; i<6; i++){
 		XFillRectangle(display, window, gc, (0.75+i) * whiteKeyWidth, 0, 
 											blackKeyWidth, blackKeyHeight);
 	}
