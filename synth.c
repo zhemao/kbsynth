@@ -51,7 +51,6 @@ void print_usage(FILE * f, char * name){
 	fprintf(f, "Supported waveforms\n");
 	fprintf(f, "  sin - pure sine wave\n");
 	fprintf(f, "  second - second harmonic\n");
-	fprintf(f, "  8bit - eight bit sound\n");
 	fprintf(f, "  clip - clipped sine wave\n");
 	exit(EXIT_FAILURE);
 }
